@@ -1,0 +1,17 @@
+# Fully-pinned environment known to run SPARC end to end.
+# Generated from the verified Alliance environment; local '+computecanada'
+# version suffixes stripped so this resolves on PyPI.
+# Install with:  pip install -r requirements-lock.txt
+lightly==1.5.18
+matplotlib==3.10.8
+numpy==1.26.4
+omegaconf==2.3.0
+pandas==3.0.0
+pillow==12.1.0
+pycocotools==2.0.6
+pyyaml==6.0.3
+scikit-image==0.26.0
+timm==1.0.24
+torch==2.10.0
+torchmetrics==1.9.0
+torchvision==0.25.0

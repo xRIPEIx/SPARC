@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sparc-ssl"
+version = "0.1.0.dev0"
+description = "SPARC: SuperPixel-Aware Region Contrastive learning for self-supervised dense prediction"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Yuanpei Xiang", email = "y53xiang@uwaterloo.ca" }]
+keywords = [
+    "self-supervised-learning",
+    "contrastive-learning",
+    "superpixels",
+    "dense-prediction",
+    "semantic-segmentation",
+    "object-detection",
+]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
+]
+
+dependencies = [
+    "torch>=2.4",
+    "torchvision>=0.19",
+    "lightly>=1.5.18",
+    "torchmetrics>=1.4",
+    "numpy>=1.26",
+    "pillow>=10",
+    "pycocotools>=2.0.6",
+    "omegaconf>=2.3",
+    "pyyaml>=6.0",
+    # PINNED EXACTLY, ON PURPOSE.
+    # scikit-image IS the superpixel method: slic() output can change between
+    # releases, which would silently change every downstream number. Do not
+    # relax this to a range without re-running the mask-regeneration check in
+    # docs/reproduce.md. See also requirements-lock.txt.
+    "scikit-image==0.26.0",
+]
+
+[project.optional-dependencies]
+# Any timm model becomes an available backbone with zero code changes.
+timm = ["timm>=1.0"]
+# Table/figure generation for the paper.
+viz = ["matplotlib>=3.8", "pandas>=2.0"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+sparc-pretrain = "sparc.cli.pretrain:main"
+sparc-eval = "sparc.cli.evaluate:main"
+sparc-masks = "sparc.cli.masks:main"
+sparc-sweep = "sparc.cli.sweep:main"
+sparc-report = "sparc.cli.report:main"
+
+[project.urls]
+Repository = "https://github.com/y53xiang/SPARC"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Default run is fast, CPU-only, offline. Everything slower is opt-in.
+addopts = "-q -m 'not gpu and not slurm and not legacy'"
+markers = [
+    "gpu: requires a CUDA device",
+    "slurm: requires a SLURM scheduler",
+    "legacy: compares against the pre-rename implementation; needs it on PYTHONPATH",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

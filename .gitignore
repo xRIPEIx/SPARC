@@ -1,0 +1,75 @@
+# ---------------------------------------------------------------------------
+# This repository ships CODE, CONFIGS and MANIFESTS. It ships no datasets, no
+# masks, no checkpoints, and no images.
+#
+# This file is deliberately the first commit. A large blob committed into a
+# fresh history is painful to remove later, and CI enforces a size ceiling on
+# top of these patterns (see .github/workflows/ci.yml).
+#
+# The ONLY data committed here are the small aggregate result CSVs under
+# experiments/results/aggregate/, which are a few tens of KB in total.
+# ---------------------------------------------------------------------------
+
+# --- model weights and tensors ---
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+
+# --- datasets, masks, archives ---
+*.npy
+*.npz
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+/data/
+/datasets/
+/runs/
+/superpixel_masks/
+/mask_archives/
+
+# --- images (the architecture figure is added with `git add -f`) ---
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.webp
+*.tif
+*.tiff
+
+# --- local configuration (per-machine dataset roots) ---
+configs/paths.local.yaml
+
+# --- scheduler and run output ---
+/slurm_output/
+*.out
+*.err
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.so
+.Python
+/build/
+/dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+
+# --- tooling caches ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# --- editors / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store

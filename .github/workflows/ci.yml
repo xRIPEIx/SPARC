@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install (CPU torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check . && ruff format --check .
+
+      - name: Tests
+        # Fast, CPU-only, offline. GPU/slurm/legacy tests are excluded by
+        # the addopts marker filter in pyproject.toml.
+        run: pytest
+
+  repo-hygiene:
+    # This repository ships no datasets, masks or checkpoints. Intent is not
+    # enough: a blob committed into history is painful to remove later, so the
+    # rule is enforced here as well as in .gitignore.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No large tracked files
+        run: |
+          limit=$((1024 * 1024))   # 1 MiB per file
+          fail=0
+          while IFS= read -r f; do
+            size=$(stat -c%s "$f")
+            if [ "$size" -gt "$limit" ]; then
+              echo "::error file=$f::$f is $size bytes, over the 1 MiB limit"
+              fail=1
+            fi
+          done < <(git ls-files)
+          exit $fail
+
+      - name: No data file types tracked
+        run: |
+          if git ls-files | grep -Ei '\.(npy|npz|pth|pt|ckpt|tar|tar\.gz|tgz|zip|jpg|jpeg|bmp|webp)$'; then
+            echo "::error::data/weight files must not be committed - see .gitignore"
+            exit 1
+          fi
+          echo "clean"
+
+      - name: Total tree size
+        run: |
+          kb=$(git ls-files -z | du -c --files0-from=- | tail -1 | cut -f1)
+          echo "tracked tree: ${kb} KiB"
+          # Generous ceiling: code + configs + small aggregate CSVs only.
+          if [ "$kb" -gt 20480 ]; then
+            echo "::error::tracked tree is ${kb} KiB, over the 20 MiB ceiling"
+            exit 1
+          fi
