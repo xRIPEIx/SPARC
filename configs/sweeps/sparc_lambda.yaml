@@ -1,0 +1,25 @@
+# SPARC's region-loss weight.
+#
+#   L = (1 - lambda_region) * L_global + lambda_region * L_region
+#
+# One of the paper's two headline ablations. Its companion is densecl_lambda,
+# which sweeps DenseCL's own global-vs-dense mix over the same seven values, so
+# the two curves can be read on one axis.
+#
+# lambda_region = 0 reduces SPARC to the MoCo-global objective. That endpoint is
+# shared with densecl_lambda_0 and with the MoCo v2 baseline: three routes to
+# the same model, which must agree within seed noise.
+name: sparc_lambda
+description: SPARC region-loss weight, 7 values x 5 seeds
+
+pretrain_config: ../pretrain/sparc_coco_r18.yaml
+downstream_configs:
+  segmentation: ../downstream/voc_seg_fcn_r18.yaml
+  detection: ../downstream/voc_det_frcnn_r18.yaml
+
+seeds: [1, 2, 3, 4, 5]
+
+axis:
+  key: method.lambda_region
+  values: [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+  config_id: sparc_lambda_{value}

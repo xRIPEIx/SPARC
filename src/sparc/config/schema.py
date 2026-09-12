@@ -174,3 +174,53 @@ class DownstreamConfig:
     output: OutputConfig = field(default_factory=OutputConfig)
     #: Where the single-row result CSV is written.
     results_csv: str = "${paths.results_root}/${task}/${experiment.run_id}.csv"
+
+
+# ---------------------------------------------------------------------------
+# Sweeps
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class SweepAxis:
+    """A one-factor-at-a-time axis: one config key varied over several values."""
+
+    #: Dotted config key to vary, e.g. "method.lambda_region".
+    key: str = "???"
+    values: list[Any] = field(default_factory=list)
+    #: config_id template. `{value}` is the formatted value (0.5 -> "0p5").
+    config_id: str = "{value}"
+
+
+@dataclass
+class SweepEntry:
+    """One explicitly-named configuration, for sweeps that are not an axis."""
+
+    config_id: str = "???"
+    #: Pretraining config, or null for arms that need no pretraining
+    #: (random init, supervised ImageNet).
+    pretrain_config: str | None = None
+    pretrain_overrides: list[str] = field(default_factory=list)
+    downstream_overrides: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SweepConfig:
+    """A set of runs sharing one protocol.
+
+    Exactly one of `axis` or `entries` is given. The expansion is the single
+    source of truth for both pretraining and evaluation: previously the swept
+    values lived in bash arrays duplicated between each sweep's pretrain and
+    evaluate script, where editing one and not the other would evaluate the
+    wrong checkpoint under the right run_id and report no error at all.
+    """
+
+    name: str = "???"
+    description: str = ""
+    #: Base pretraining config every entry inherits.
+    pretrain_config: str | None = None
+    #: Downstream config per task.
+    downstream_configs: dict[str, str] = field(default_factory=dict)
+    seeds: list[int] = field(default_factory=lambda: [1, 2, 3, 4, 5])
+    axis: SweepAxis | None = None
+    entries: list[SweepEntry] = field(default_factory=list)

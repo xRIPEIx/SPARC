@@ -1,0 +1,23 @@
+# DenseCL's global-vs-dense mix.
+#
+# This is DenseCL's OWN hyper-parameter, not anything SPARC adds. It is swept
+# over the same seven values as sparc_lambda so the two ablations sit side by
+# side and share the lambda = 0 endpoint.
+#
+# NOTE: dense_lambda defaults to 0.5, so densecl_lambda_0p5 IS the DenseCL
+# baseline. They are one run and must never be reported as independent evidence.
+# Needs no superpixel masks.
+name: densecl_lambda
+description: DenseCL global-vs-dense mix, 7 values x 5 seeds
+
+pretrain_config: ../pretrain/densecl_coco_r18.yaml
+downstream_configs:
+  segmentation: ../downstream/voc_seg_fcn_r18.yaml
+  detection: ../downstream/voc_det_frcnn_r18.yaml
+
+seeds: [1, 2, 3, 4, 5]
+
+axis:
+  key: method.dense_lambda
+  values: [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+  config_id: densecl_lambda_{value}

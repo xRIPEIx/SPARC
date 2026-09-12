@@ -1,0 +1,31 @@
+# Baseline comparison.
+#
+# Two arms pretrain (MoCo v2, DenseCL) and two do not (random init, supervised
+# ImageNet) -- the latter go straight to fine-tuning, so they carry no
+# pretrain_config and instead override the downstream initialisation.
+#
+# densecl_lambda_0p5 appears here AND in the densecl_lambda sweep because it is
+# literally the same run. Report it once.
+name: baselines
+description: MoCo v2, DenseCL, random init and supervised ImageNet, 5 seeds each
+
+downstream_configs:
+  segmentation: ../downstream/voc_seg_fcn_r18.yaml
+  detection: ../downstream/voc_det_frcnn_r18.yaml
+
+seeds: [1, 2, 3, 4, 5]
+
+entries:
+  - config_id: moco
+    pretrain_config: ../pretrain/moco_coco_r18.yaml
+
+  - config_id: densecl_lambda_0p5
+    pretrain_config: ../pretrain/densecl_coco_r18.yaml
+
+  - config_id: random
+    # No pretraining: the backbone starts from random weights.
+    downstream_overrides: ["model.init=random", "model.ssl_ckpt=null"]
+
+  - config_id: imagenet
+    # No SSL pretraining: supervised ImageNet weights from torchvision.
+    downstream_overrides: ["model.init=supervised_imagenet", "model.ssl_ckpt=null"]

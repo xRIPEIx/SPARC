@@ -1,0 +1,46 @@
+# Copy to slurm/cluster_env.sh (gitignored) and edit for your site.
+#
+# This is the ONLY file with site-specific settings in it. Everything else in
+# slurm/ reads from here, so adapting SPARC to another cluster means editing one
+# file rather than 46 #SBATCH headers.
+#
+# If you do not use SLURM at all, ignore this directory entirely and call
+# `sparc-pretrain` / `sparc-eval` directly. That path is fully supported.
+
+# --- scheduler ---
+export SPARC_ACCOUNT="def-yourpi"
+export SPARC_PARTITION=""                  # leave empty to let SLURM choose
+# GPU request string, passed to --gpus. Examples:
+#   "1"                 any single GPU
+#   "a100_3g.20gb:1"    one MIG slice (Alliance Narval)
+#   "gpu:a100:1"        a full A100 on many other sites
+export SPARC_GPU="a100_3g.20gb:1"
+
+# Keep CPUs and data.num_workers aligned: workers time-sharing fewer cores than
+# they expect is a real and easily-missed throughput loss.
+export SPARC_CPUS=16
+export SPARC_MEM="32G"
+export SPARC_PRETRAIN_TIME="20:00:00"
+export SPARC_SEG_TIME="02:00:00"
+export SPARC_DET_TIME="05:00:00"
+
+# --- environment ---
+# Module system, if your site uses one. Leave empty otherwise.
+export SPARC_MODULES=("python/3.11")
+export SPARC_VENV="$HOME/envs/sparc"
+
+# --- storage ---
+# Dataset locations. These feed configs/paths.yaml through its ${oc.env:...}
+# defaults, so the YAML needs no editing.
+export SPARC_DATA_ROOT="${SCRATCH:-$HOME/scratch}/sparc/data"
+export SPARC_COCO_IMAGES="$SPARC_DATA_ROOT/coco/train2017"
+export SPARC_SUPERPIXEL_ROOT="$SPARC_DATA_ROOT/superpixel_masks"
+export SPARC_VOC_ROOT="$SPARC_DATA_ROOT/VOC"       # contains VOCdevkit/VOC2012
+export SPARC_OUTPUT_ROOT="${SCRATCH:-$HOME/scratch}/sparc/runs"
+
+# Node-local scratch used for staging. See stage_dataset.sh for why this
+# matters: reading 118k small files per epoch off a shared parallel filesystem
+# was measured at 602 ms/batch against 57 ms/batch from node-local NVMe.
+export SPARC_STAGE_DIR="${SLURM_TMPDIR:-/tmp/$USER}"
+# Mask archives (one tar per mask set) live here; see stage_dataset.sh.
+export SPARC_MASK_ARCHIVE_ROOT="$SPARC_DATA_ROOT/mask_archives"

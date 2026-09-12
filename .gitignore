@@ -41,6 +41,7 @@
 
 # --- local configuration (per-machine dataset roots) ---
 configs/paths.local.yaml
+slurm/cluster_env.sh
 
 # --- scheduler and run output ---
 /slurm_output/
