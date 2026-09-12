@@ -30,7 +30,7 @@
 /superpixel_masks/
 /mask_archives/
 
-# --- images (the architecture figure is added with `git add -f`) ---
+# --- images: datasets never; the handful of generated figures are allowed ---
 *.jpg
 *.jpeg
 *.png
@@ -38,6 +38,7 @@
 *.webp
 *.tif
 *.tiff
+!docs/figures/*.png
 
 # --- local configuration (per-machine dataset roots) ---
 configs/paths.local.yaml

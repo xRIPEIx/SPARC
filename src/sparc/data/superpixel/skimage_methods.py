@@ -23,9 +23,10 @@ from skimage.filters import sobel
 from skimage.segmentation import felzenszwalb, slic, watershed
 from skimage.util import regular_grid
 
-METHOD_CHOICES = ("slic", "felzenszwalb", "compact_watershed")
+from sparc.data.superpixel.registry import register_superpixel
 
 
+@register_superpixel("slic")
 def compute_slic_mask(
     image_rgb: np.ndarray,
     n_segments: int,
@@ -42,6 +43,7 @@ def compute_slic_mask(
     )
 
 
+@register_superpixel("felzenszwalb")
 def compute_felzenszwalb_mask(
     image_rgb: np.ndarray,
     n_segments: int,
@@ -76,6 +78,7 @@ def compute_felzenszwalb_mask(
     return best_mask
 
 
+@register_superpixel("compact_watershed")
 def compute_compact_watershed_mask(
     image_rgb: np.ndarray,
     n_segments: int,
@@ -98,16 +101,3 @@ def compute_compact_watershed_mask(
     gradient = sobel(rgb2gray(image_rgb))
     labels = watershed(gradient, markers=markers, compactness=compactness)
     return labels - 1  # markers start at 1; shift to match start_label=0 elsewhere
-
-
-def compute_mask(method: str, image_rgb: np.ndarray, n_segments: int, **kwargs) -> np.ndarray:
-    if method == "slic":
-        return compute_slic_mask(image_rgb, n_segments, **kwargs)
-    if method == "felzenszwalb":
-        return compute_felzenszwalb_mask(image_rgb, n_segments, **kwargs)
-    if method == "compact_watershed":
-        return compute_compact_watershed_mask(image_rgb, n_segments, **kwargs)
-    raise ValueError(
-        f"Unknown superpixel method {method!r}. Available: {METHOD_CHOICES}. "
-        "To add one, see docs/extending.md."
-    )

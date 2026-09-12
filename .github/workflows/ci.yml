@@ -33,6 +33,12 @@ jobs:
         # the addopts marker filter in pyproject.toml.
         run: pytest
 
+      - name: Results are consistent and the README is current
+        # The README table is generated from the committed aggregates, never
+        # typed. This fails if someone edits one without regenerating the
+        # other, and re-runs the lambda=0 identity check on every push.
+        run: make paper-check
+
   repo-hygiene:
     # This repository ships no datasets, masks or checkpoints. Intent is not
     # enough: a blob committed into history is painful to remove later, so the

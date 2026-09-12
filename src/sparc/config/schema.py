@@ -225,3 +225,35 @@ class SweepConfig:
     seeds: list[int] = field(default_factory=lambda: [1, 2, 3, 4, 5])
     axis: SweepAxis | None = None
     entries: list[SweepEntry] = field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Superpixel mask generation
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class SuperpixelConfig:
+    """One mask set. Each method reads the tunables it accepts and ignores the rest."""
+
+    method: str = "slic"
+    n_segments: int = 100
+    #: Image root to generate masks for; mirrors its tree under `output`.
+    images: str = "${paths.coco_images}"
+    #: Mask directory, conventionally <superpixel_root>/<method>_n<segments>.
+    output: str = "???"
+    #: "auto" picks the smallest integer dtype that holds the labels (uint8 up
+    #: to 255 segments). The previous int32 masks were three-quarters zero
+    #: bytes; auto is 4x smaller with identical values.
+    dtype: str = "auto"
+    # --- per-method tunables; unused ones are ignored ---
+    compactness: float | None = None
+    sigma: float | None = None
+    min_size_floor: int | None = None
+    #: Cap the image count. For smoke tests only.
+    limit: int | None = None
+
+
+@dataclass
+class SuperpixelRoot:
+    superpixel: SuperpixelConfig = field(default_factory=SuperpixelConfig)
