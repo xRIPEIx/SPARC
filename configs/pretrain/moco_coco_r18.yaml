@@ -1,0 +1,16 @@
+# MoCo v2 baseline.
+#
+# MoCo v2 in substance: MLP projection head, v2 augmentations, cosine momentum.
+# Two deviations to state when citing it -- Adam rather than SGD with momentum,
+# and no shuffling BatchNorm, because training is single-GPU.
+#
+# Needs no superpixel masks.
+defaults: [_base.yaml, ../backbone/resnet18.yaml]
+
+experiment:
+  config_id: moco
+  run_id: moco
+  tags: [paper, baseline]
+
+method:
+  name: moco

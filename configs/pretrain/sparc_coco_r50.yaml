@@ -1,0 +1,17 @@
+# Backbone swap, to show it needs nothing but a different config.
+# Equivalent to:
+#   sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml \
+#                  --set backbone.name=resnet50
+defaults: [_base.yaml, ../backbone/resnet50.yaml]
+
+experiment:
+  config_id: sparc_lambda_0p5_r50
+  run_id: sparc_lambda_0p5_r50
+
+method:
+  name: sparc
+  lambda_region: 0.5
+  region_pool_size: 7
+
+data:
+  masks: ${paths.superpixel_root}/slic_n100

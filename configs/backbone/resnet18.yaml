@@ -1,0 +1,3 @@
+backbone:
+  name: resnet18
+  imagenet_init: false

@@ -1,0 +1,8 @@
+# The paper's superpixel configuration.
+superpixel:
+  method: slic
+  n_segments: 100
+  compactness: 10.0
+  sigma: 1.0
+  # Mask directories are named <method>_n<segments> so several can coexist.
+  output: ${paths.superpixel_root}/slic_n100

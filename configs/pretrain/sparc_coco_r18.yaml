@@ -1,0 +1,27 @@
+# The paper's reference SPARC configuration.
+#
+#   sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml
+#
+# Sweep lambda by overriding it, which is exactly what the manifest does:
+#   --set method.lambda_region=0.7 experiment.config_id=sparc_lambda_0p7
+defaults: [_base.yaml, ../backbone/resnet18.yaml]
+
+experiment:
+  config_id: sparc_lambda_0p5
+  run_id: sparc_lambda_0p5
+  tags: [paper, reference]
+
+method:
+  name: sparc
+  # L = (1 - lambda_region) * L_global + lambda_region * L_region.
+  # At 0 this is the MoCo-global objective, which is where this sweep meets the
+  # DenseCL sweep and the MoCo baseline.
+  lambda_region: 0.5
+  region_temperature: 0.2
+  max_regions: 16
+  # Regions are pooled onto a 7x7 grid. Fixed in the paper.
+  region_pool_size: 7
+  region_min_area: 1.0
+
+data:
+  masks: ${paths.superpixel_root}/slic_n100

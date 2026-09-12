@@ -1,0 +1,8 @@
+# Worked example: an algorithm with no direct segment-count knob. The generator
+# binary-searches `scale` to land near n_segments, keeping one CLI contract for
+# every method. Not part of the paper.
+superpixel:
+  method: felzenszwalb
+  n_segments: 100
+  sigma: 1.0
+  output: ${paths.superpixel_root}/felzenszwalb_n100

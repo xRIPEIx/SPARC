@@ -1,0 +1,7 @@
+# Worked example: seed count controls the output label count directly, so no
+# parameter search is needed. Not part of the paper.
+superpixel:
+  method: compact_watershed
+  n_segments: 100
+  compactness: 0.001
+  output: ${paths.superpixel_root}/compact_watershed_n100

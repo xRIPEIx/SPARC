@@ -6,9 +6,21 @@ datasets, no network and no GPU, so that CI actually gets run.
 
 from __future__ import annotations
 
+import os
+
+# Must precede the torch import: the tensors in this suite are tiny, and letting
+# BLAS/OMP fan out across every core spends far more time on thread handoff than
+# on arithmetic. On a 64-core login node this took a 2x3x64x64 resnet18 forward
+# from 22s to well under a second.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+
 import numpy as np
 import pytest
 import torch
+
+torch.set_num_threads(1)
 
 
 @pytest.fixture(autouse=True)
@@ -65,3 +77,33 @@ def _make_image_mask_pair(size: int = 64, n_labels: int = 2):
             arr[lo:hi, :, :] = i * (255 // n_labels)
             mask[lo:hi, :] = i
     return Image.fromarray(arr), mask
+
+
+@pytest.fixture
+def synthetic_corpus(tmp_path):
+    """A tiny image+mask corpus that `sparc-pretrain` can actually train on.
+
+    Four regions per image (quadrants), so region matching has something real to
+    do rather than degenerating to a single region.
+    """
+    from PIL import Image
+
+    from sparc.data.superpixel import write_meta
+
+    images = tmp_path / "images"
+    masks = tmp_path / "masks"
+    images.mkdir()
+    masks.mkdir()
+    rng = np.random.default_rng(0)
+    h = w = 48
+    yy, xx = np.mgrid[0:h, 0:w]
+    for i in range(8):
+        arr = np.stack([yy * 4 % 256, xx * 4 % 256, (yy + xx) * 2 % 256], -1).astype(np.uint8)
+        arr = np.clip(arr + rng.normal(0, 10, arr.shape), 0, 255).astype(np.uint8)
+        Image.fromarray(arr).save(images / f"img{i:03d}.png")
+        mask = np.zeros((h, w), dtype=np.int32)
+        mask[h // 2 :, :] = 1
+        mask[:, w // 2 :] += 2
+        np.save(masks / f"img{i:03d}.npy", mask)
+    write_meta(masks, {"mode": "precomputed_npy", "method": "synthetic", "n_segments": 4})
+    return images, masks

@@ -1,0 +1,5 @@
+# Any timm architecture works with no code change. Needs the timm extra:
+#   pip install 'sparc-ssl[timm]'
+backbone:
+  name: timm:convnext_tiny
+  imagenet_init: false

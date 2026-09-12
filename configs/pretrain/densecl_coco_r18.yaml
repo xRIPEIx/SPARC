@@ -1,0 +1,17 @@
+# DenseCL baseline.
+#
+# NOTE: dense_lambda defaults to 0.5, so this configuration IS
+# densecl_lambda_0p5 from the lambda sweep. They are the same run and must never
+# be reported as two independent results.
+#
+# Needs no superpixel masks.
+defaults: [_base.yaml, ../backbone/resnet18.yaml]
+
+experiment:
+  config_id: densecl_lambda_0p5
+  run_id: densecl_lambda_0p5
+  tags: [paper, baseline]
+
+method:
+  name: densecl
+  dense_lambda: 0.5

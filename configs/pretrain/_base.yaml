@@ -1,0 +1,32 @@
+# Defaults shared by every pretraining configuration.
+# Individual configs inherit this via `defaults: [_base.yaml]` and override what
+# they need.
+
+data:
+  images: ${paths.coco_images}
+  dataset_name: coco
+  input_size: 224
+  num_workers: 8
+
+train:
+  epochs: 100
+  batch_size: 64
+  optimizer: adam
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  scheduler: cosine
+  momentum_start: 0.996
+  momentum_end: 1.0
+  amp: true
+  seed: 1
+  save_every: 10
+  save_last_every_epoch: true
+  resume: auto
+
+method:
+  proj_dim: 128
+  memory_bank_size: 4096
+  temperature: 0.1
+
+output:
+  dir: ${paths.checkpoint_root}/${experiment.run_id}

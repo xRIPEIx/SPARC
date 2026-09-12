@@ -1,0 +1,8 @@
+# Copy to configs/paths.local.yaml (gitignored) and edit.
+# Merged over paths.yaml, so you only list what you want to change.
+paths:
+  data_root: /scratch/me/datasets
+  coco_images: /scratch/me/datasets/coco/train2017
+  superpixel_root: /scratch/me/datasets/superpixel_masks
+  voc_root: /scratch/me/datasets/VOCdevkit
+  output_root: /scratch/me/sparc-runs

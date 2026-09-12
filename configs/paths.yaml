@@ -1,0 +1,31 @@
+# Dataset and output locations. THIS IS THE ONLY FILE YOU NEED TO EDIT.
+#
+# Every other config refers to ${paths.*} and never to a literal path, so
+# pointing SPARC at your data is a one-file change.
+#
+# Two ways to set these, both supported at once:
+#   1. Environment variables (handy on a cluster):  export SPARC_COCO_IMAGES=...
+#   2. A gitignored configs/paths.local.yaml, which is merged over this file.
+#      Copy paths.local.yaml.example to get started.
+#
+# Environment variables win over the defaults below; paths.local.yaml wins over
+# both.
+
+paths:
+  data_root: ${oc.env:SPARC_DATA_ROOT,./data}
+
+  # --- pretraining ---
+  # Any directory tree of images. COCO train2017 is what the paper uses.
+  coco_images: ${oc.env:SPARC_COCO_IMAGES,${paths.data_root}/coco/train2017}
+  # Superpixel masks, mirroring the image tree, one <method>_n<segments> dir per
+  # configuration. Generate with `sparc-masks`; nothing is shipped.
+  superpixel_root: ${oc.env:SPARC_SUPERPIXEL_ROOT,${paths.data_root}/superpixel_masks}
+
+  # --- downstream evaluation ---
+  voc_root: ${oc.env:SPARC_VOC_ROOT,${paths.data_root}/VOCdevkit}
+  sbd_root: ${oc.env:SPARC_SBD_ROOT,${paths.data_root}/sbd}
+
+  # --- outputs ---
+  output_root: ${oc.env:SPARC_OUTPUT_ROOT,./runs}
+  checkpoint_root: ${oc.env:SPARC_CHECKPOINT_ROOT,${paths.output_root}/checkpoints}
+  results_root: ${oc.env:SPARC_RESULTS_ROOT,${paths.output_root}/results}
