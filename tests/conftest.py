@@ -107,3 +107,53 @@ def synthetic_corpus(tmp_path):
         np.save(masks / f"img{i:03d}.npy", mask)
     write_meta(masks, {"mode": "precomputed_npy", "method": "synthetic", "n_segments": 4})
     return images, masks
+
+
+@pytest.fixture
+def synthetic_voc(tmp_path):
+    """A miniature VOC2012 tree that torchvision can read.
+
+    Enough structure for both tasks -- JPEGImages, SegmentationClass,
+    Annotations, and both ImageSets splits -- so `sparc-eval` can be exercised
+    end to end in CI without the real 2 GB dataset.
+
+    Returns the path to pass as `voc_root`: the directory CONTAINING VOCdevkit,
+    since torchvision appends "VOCdevkit/VOC2012" itself.
+    """
+    from PIL import Image
+
+    root = tmp_path / "VOC"
+    base = root / "VOCdevkit" / "VOC2012"
+    for sub in ("JPEGImages", "SegmentationClass", "Annotations"):
+        (base / sub).mkdir(parents=True)
+    (base / "ImageSets" / "Segmentation").mkdir(parents=True)
+    (base / "ImageSets" / "Main").mkdir(parents=True)
+
+    names = [f"2012_{i:06d}" for i in range(4)]
+    rng = np.random.default_rng(0)
+    for i, name in enumerate(names):
+        h = w = 64
+        Image.fromarray(rng.integers(0, 255, (h, w, 3), dtype=np.uint8)).save(
+            base / "JPEGImages" / f"{name}.jpg"
+        )
+        # Segmentation targets are palette PNGs whose pixel values are class ids.
+        mask = np.zeros((h, w), dtype=np.uint8)
+        mask[h // 2 :, :] = (i % 20) + 1
+        Image.fromarray(mask, mode="P").save(base / "SegmentationClass" / f"{name}.png")
+
+        (base / "Annotations" / f"{name}.xml").write_text(
+            f"""<annotation>
+  <filename>{name}.jpg</filename>
+  <size><width>{w}</width><height>{h}</height><depth>3</depth></size>
+  <object>
+    <name>person</name><difficult>0</difficult>
+    <bndbox><xmin>8</xmin><ymin>8</ymin><xmax>40</xmax><ymax>40</ymax></bndbox>
+  </object>
+</annotation>
+"""
+        )
+
+    for split_dir in ("Segmentation", "Main"):
+        for split in ("train", "val"):
+            (base / "ImageSets" / split_dir / f"{split}.txt").write_text("\n".join(names) + "\n")
+    return root

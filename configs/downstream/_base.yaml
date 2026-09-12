@@ -1,0 +1,31 @@
+# Shared downstream protocol.
+#
+# The learning rate and weight decay were tuned ONCE, by an Optuna search over
+# the segmentation task against a fixed pretrained checkpoint, and then frozen
+# for every arm and both tasks. Keeping one protocol across arms is what makes
+# the comparison a comparison; re-tuning per arm would confound the result with
+# how much search each arm received.
+
+data:
+  voc_root: ${paths.voc_root}
+  sbd_root: ${paths.sbd_root}
+  num_workers: 4
+  download: false
+  ignore_difficult: true
+
+model:
+  init: ssl
+  allow_partial_load: false
+
+train:
+  lr: 7.47977835764546e-05
+  weight_decay: 0.000119573094297164
+  eval_every: 1
+  amp: true
+  seed: 1
+  print_freq: 50
+  save_model: false
+
+output:
+  dir: ${paths.output_root}/downstream/${task}/${experiment.run_id}
+results_csv: ${paths.results_root}/${task}/${experiment.run_id}.csv

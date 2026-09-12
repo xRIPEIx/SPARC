@@ -111,3 +111,66 @@ class PretrainConfig:
     data: DataConfig = field(default_factory=DataConfig)
     train: TrainConfig = field(default_factory=TrainConfig)
     output: OutputConfig = field(default_factory=OutputConfig)
+
+
+# ---------------------------------------------------------------------------
+# Downstream evaluation
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class DownstreamDataConfig:
+    voc_root: str = "???"
+    sbd_root: str | None = None
+    #: "voc2012" or "sbd" (SBD train_noval). Validation is always VOC2012 val.
+    seg_train_source: str = "voc2012"
+    crop_size: int = 512
+    eval_size: int = 520
+    num_workers: int = 4
+    download: bool = False
+    #: VOC marks hard examples "difficult"; the standard protocol excludes them.
+    ignore_difficult: bool = True
+
+
+@dataclass
+class DownstreamModelConfig:
+    #: "random", "supervised_imagenet", or "ssl".
+    init: str = "ssl"
+    ssl_ckpt: str | None = None
+    #: Proceed even when few checkpoint parameters matched. Off by design: the
+    #: default refuses, because a silent partial load yields a plausible metric.
+    allow_partial_load: bool = False
+
+
+@dataclass
+class DownstreamTrainConfig:
+    epochs: int = 40
+    batch_size: int = 16
+    eval_batch_size: int = 4
+    #: Tuned once by an Optuna search over the segmentation task and then frozen
+    #: for every run, including detection, so that all arms share one protocol.
+    lr: float = 7.47977835764546e-05
+    weight_decay: float = 0.000119573094297164
+    eval_every: int = 1
+    amp: bool = True
+    seed: int = 1
+    device: str = "auto"
+    gpu: int | None = None
+    print_freq: int = 50
+    #: Keep the fine-tuned model, not just its metric. Needed for prediction
+    #: visualisation; a previous study discarded every head and had to refit.
+    save_model: bool = False
+
+
+@dataclass
+class DownstreamConfig:
+    #: "segmentation" or "detection".
+    task: str = "segmentation"
+    experiment: ExperimentConfig = field(default_factory=ExperimentConfig)
+    backbone: BackboneConfig = field(default_factory=BackboneConfig)
+    model: DownstreamModelConfig = field(default_factory=DownstreamModelConfig)
+    data: DownstreamDataConfig = field(default_factory=DownstreamDataConfig)
+    train: DownstreamTrainConfig = field(default_factory=DownstreamTrainConfig)
+    output: OutputConfig = field(default_factory=OutputConfig)
+    #: Where the single-row result CSV is written.
+    results_csv: str = "${paths.results_root}/${task}/${experiment.run_id}.csv"

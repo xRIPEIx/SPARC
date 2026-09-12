@@ -2,9 +2,9 @@
 
 **S**uper**P**ixel-**A**ware **R**egion **C**ontrastive learning for self-supervised dense prediction.
 
-> **Status: under construction.** Pretraining works end to end. Downstream
-> evaluation, the sweep tooling, the model zoo and the full docs land in
-> subsequent phases.
+> **Status: under construction.** Pretraining and downstream evaluation both
+> work end to end. The sweep tooling, mask generation CLI, model zoo and full
+> docs land in subsequent phases.
 
 SPARC adds a region-level contrastive term to image-level self-supervised
 learning. Superpixels define the regions, and are used to pool encoder features
@@ -27,6 +27,9 @@ the SPARC and DenseCL λ sweeps meet the MoCo v2 baseline at a single shared poi
 | How the pieces compose into a loss | [`methods/sparc.py`](src/sparc/methods/sparc.py) |
 | The pretraining loop | [`engine/trainer.py`](src/sparc/engine/trainer.py) |
 | Aligned image/mask augmentation | [`data/transforms.py`](src/sparc/data/transforms.py) |
+| Segmentation fine-tuning | [`eval/segmentation.py`](src/sparc/eval/segmentation.py) |
+| Detection fine-tuning | [`eval/detection.py`](src/sparc/eval/detection.py) |
+| How mIoU and AP are computed | [`eval/metrics.py`](src/sparc/eval/metrics.py) |
 | How superpixel masks are generated | [`data/superpixel/`](src/sparc/data/superpixel/) |
 | Adding a backbone | [`models/backbones/`](src/sparc/models/backbones/) |
 | Checkpoint → downstream backbone | [`engine/checkpoint.py`](src/sparc/engine/checkpoint.py) |
@@ -73,6 +76,31 @@ sparc-pretrain --config configs/pretrain/moco_coco_r18.yaml
 sparc-pretrain --config configs/pretrain/densecl_coco_r18.yaml
 ```
 
+## Evaluate
+
+Fine-tune a pretrained backbone on VOC and write a result row:
+
+```bash
+sparc-eval --config configs/downstream/voc_seg_fcn_r18.yaml \
+           --set model.ssl_ckpt=runs/checkpoints/sparc_lambda_0p5/last.pth \
+                 experiment.config_id=sparc_lambda_0p5
+
+sparc-eval --config configs/downstream/voc_det_frcnn_r18.yaml \
+           --set model.ssl_ckpt=runs/checkpoints/sparc_lambda_0p5/last.pth \
+                 experiment.config_id=sparc_lambda_0p5
+```
+
+Baselines need no checkpoint — `--set model.init=random` or
+`model.init=supervised_imagenet`.
+
+Both tasks share one frozen protocol (learning rate, weight decay, schedule),
+tuned once and then applied to every arm, so the comparison measures the
+pretraining objective rather than how much hyper-parameter search each arm got.
+
+Loading a checkpoint that does not fit the requested architecture is a hard
+error, not a warning: a partial load would leave most of the network randomly
+initialised and still report a perfectly plausible metric.
+
 ## Swap the backbone
 
 A different architecture is a config change, not a code change:
@@ -82,10 +110,12 @@ sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml --set backbone.name
 sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml --set backbone.name=timm:convnext_tiny
 ```
 
-Built in: `resnet18/34/50/101/152`. Any [timm](https://github.com/huggingface/pytorch-image-models)
-model works via the `timm:` prefix (`pip install 'sparc-ssl[timm]'`). Adding a
-new family means writing one registry entry — the segmentation and detection
-heads build themselves from the channel counts it reports.
+The same override works for `sparc-eval`. Built in: `resnet18/34/50/101/152`.
+Any [timm](https://github.com/huggingface/pytorch-image-models) model works via
+the `timm:` prefix (`pip install 'sparc-ssl[timm]'`). Adding a new family means
+writing one registry entry — the FCN and Faster R-CNN heads size themselves from
+the per-stage channel counts it reports, so neither needs to know the
+architecture.
 
 ## What this repository does and does not contain
 

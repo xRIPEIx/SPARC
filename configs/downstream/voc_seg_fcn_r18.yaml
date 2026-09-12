@@ -1,0 +1,20 @@
+# VOC2012 semantic segmentation, FCN head, ResNet-18.
+#
+#   sparc-eval --config configs/downstream/voc_seg_fcn_r18.yaml \
+#              --set model.ssl_ckpt=/path/to/last.pth \
+#                    experiment.config_id=sparc_lambda_0p5
+defaults: [_base.yaml, ../backbone/resnet18.yaml]
+
+task: segmentation
+
+data:
+  # Train on VOC2012 train; validate on VOC2012 val. SBD train_noval is the
+  # larger alternative, selected with seg_train_source: sbd.
+  seg_train_source: voc2012
+  crop_size: 512
+  eval_size: 520
+
+train:
+  epochs: 40
+  batch_size: 16
+  eval_batch_size: 4

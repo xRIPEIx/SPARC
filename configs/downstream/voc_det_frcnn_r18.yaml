@@ -1,0 +1,15 @@
+# VOC2012 object detection, Faster R-CNN + FPN, ResNet-18.
+#
+# NOTE: VOC2012's Main/val.txt (detection) and Segmentation/val.txt are
+# different, only partially overlapping subsets. A fixed sample list from one
+# task must not be reused for the other.
+defaults: [_base.yaml, ../backbone/resnet18.yaml]
+
+task: detection
+
+train:
+  # Detection is far more expensive per epoch than segmentation, hence fewer
+  # epochs and a much smaller batch.
+  epochs: 10
+  batch_size: 2
+  eval_batch_size: 4

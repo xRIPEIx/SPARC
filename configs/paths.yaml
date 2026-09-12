@@ -22,7 +22,10 @@ paths:
   superpixel_root: ${oc.env:SPARC_SUPERPIXEL_ROOT,${paths.data_root}/superpixel_masks}
 
   # --- downstream evaluation ---
-  voc_root: ${oc.env:SPARC_VOC_ROOT,${paths.data_root}/VOCdevkit}
+  # NOTE: this is the directory CONTAINING VOCdevkit, not VOCdevkit itself.
+  # torchvision appends "VOCdevkit/VOC2012" to it, so the layout must be:
+  #   <voc_root>/VOCdevkit/VOC2012/{JPEGImages,Annotations,ImageSets,...}
+  voc_root: ${oc.env:SPARC_VOC_ROOT,${paths.data_root}/VOC}
   sbd_root: ${oc.env:SPARC_SBD_ROOT,${paths.data_root}/sbd}
 
   # --- outputs ---
