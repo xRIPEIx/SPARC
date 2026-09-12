@@ -11,7 +11,6 @@ from torch.utils.data import Dataset
 
 from sparc.data.superpixel.meta import is_synthetic_constant, load_meta
 
-
 IMAGE_SUFFIXES = {".bmp", ".jpeg", ".jpg", ".png", ".webp"}
 
 

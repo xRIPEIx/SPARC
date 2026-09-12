@@ -62,7 +62,7 @@ sparc-sweep = "sparc.cli.sweep:main"
 sparc-report = "sparc.cli.report:main"
 
 [project.urls]
-Repository = "https://github.com/y53xiang/SPARC"
+Repository = "https://github.com/xRIPEIx/SPARC"
 
 [tool.setuptools.packages.find]
 where = ["src"]

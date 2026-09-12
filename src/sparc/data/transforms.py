@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import random
-from typing import Any
 
 import numpy as np
 import torch
 from PIL import Image, ImageFilter, ImageOps
 from torchvision import transforms
-from torchvision.transforms import InterpolationMode
-from torchvision.transforms import functional as TF
 
 
 class GaussianBlur:
@@ -88,9 +85,7 @@ class TwoCropsTransformWithMask:
         image = image.crop((j, i, j + w, i + h)).resize(
             self.size, resample=Image.Resampling.BICUBIC
         )
-        mask = mask.crop((j, i, j + w, i + h)).resize(
-            self.size, resample=Image.Resampling.NEAREST
-        )
+        mask = mask.crop((j, i, j + w, i + h)).resize(self.size, resample=Image.Resampling.NEAREST)
 
         if random.random() < self.hflip_prob:
             image = ImageOps.mirror(image)
