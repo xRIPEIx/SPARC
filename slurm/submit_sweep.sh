@@ -18,7 +18,7 @@ cd "$REPO"
 # shellcheck disable=SC1091
 source slurm/cluster_env.sh
 
-SWEEP="" ; SEED="" ; MASK_NAME="slic_n100" ; LIMIT="%4" ; TASKS="segmentation detection"
+SWEEP="" ; SEED="" ; MASK_NAME="slic_n100" ; LIMIT="%4" ; TASKS="segmentation detection" ; ARRAY_OVERRIDE=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --sweep) SWEEP="$2"; shift 2 ;;
@@ -26,6 +26,7 @@ while [[ $# -gt 0 ]]; do
         --mask-name) MASK_NAME="$2"; shift 2 ;;
         --limit) LIMIT="$2"; shift 2 ;;       # e.g. %4 to cap concurrency
         --tasks) TASKS="$2"; shift 2 ;;
+        --array) ARRAY_OVERRIDE="$2"; shift 2 ;;   # e.g. "3" to run one config
         *) echo "Unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -39,7 +40,7 @@ MANIFEST="experiments/${SWEEP}/manifest.csv"
 }
 
 N=$(awk -F, 'NR>1{print $1}' "$MANIFEST" | sort -un | wc -l)
-ARRAY="0-$((N - 1))${LIMIT}"
+ARRAY="${ARRAY_OVERRIDE:-0-$((N - 1))${LIMIT}}"
 mkdir -p slurm_output
 
 COMMON=(--account="$SPARC_ACCOUNT" --cpus-per-task="$SPARC_CPUS" --mem="$SPARC_MEM")

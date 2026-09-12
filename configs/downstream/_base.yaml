@@ -11,7 +11,12 @@ data:
   sbd_root: ${paths.sbd_root}
   num_workers: 4
   download: false
-  ignore_difficult: true
+  # Difficult boxes are INCLUDED in training and evaluation targets. The
+  # standard VOC protocol excludes them, but the published detection numbers
+  # were produced with them in: the previous CLI flag defaulted to false and
+  # silently overrode the dataset's own default of true. Kept false so results
+  # reproduce; set true for the conventional protocol.
+  ignore_difficult: false
 
 model:
   init: ssl

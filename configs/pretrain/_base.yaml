@@ -26,7 +26,11 @@ train:
 method:
   proj_dim: 128
   memory_bank_size: 4096
-  temperature: 0.1
+  # NT-Xent temperature for the global (image-level) term. This is 0.5, NOT the
+  # 0.1-0.2 usually quoted for MoCo v2: the study never passed a temperature and
+  # so inherited lightly's NTXentLoss default. Every published number was
+  # produced at 0.5. Change it and you are running a different experiment.
+  temperature: 0.5
 
 output:
   dir: ${paths.checkpoint_root}/${experiment.run_id}

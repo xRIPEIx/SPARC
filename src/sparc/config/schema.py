@@ -128,8 +128,9 @@ class DownstreamDataConfig:
     eval_size: int = 520
     num_workers: int = 4
     download: bool = False
-    #: VOC marks hard examples "difficult"; the standard protocol excludes them.
-    ignore_difficult: bool = True
+    #: VOC marks hard examples "difficult". The standard protocol excludes them;
+    #: the published numbers included them. See configs/downstream/_base.yaml.
+    ignore_difficult: bool = False
 
 
 @dataclass
