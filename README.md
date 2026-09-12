@@ -1,22 +1,20 @@
 # SPARC
 
-**S**uper**P**ixel-**A**ware **R**egion **C**ontrastive learning for self-supervised dense prediction.
+**SuperPixel-Aware Region Contrastive learning** for self-supervised dense prediction.
 
-> **Status: under construction.** The full pipeline works end to end —
-> mask generation, pretraining, downstream evaluation, sweeps and reporting.
-> The model zoo and the full `docs/` land next.
+[![CI](https://github.com/xRIPEIx/SPARC/actions/workflows/ci.yml/badge.svg)](https://github.com/xRIPEIx/SPARC/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-SPARC adds a region-level contrastive term to image-level self-supervised
-learning. Superpixels define the regions, and are used to pool encoder features
-*after* the backbone — they are never fed into the CNN as an extra input
-channel, so a SPARC-pretrained backbone transfers with no mask dependency:
+SPARC adds a **region-level** contrastive term to image-level self-supervised
+learning, where the regions are superpixels. Superpixels are used only to pool
+encoder features — never as an input channel — so a SPARC-pretrained backbone
+transfers to downstream tasks with no mask dependency at all.
 
 ```
-L = (1 - λ) · L_global + λ · L_region
+L = (1 − λ) · L_global + λ · L_region          λ = 0 recovers MoCo v2 exactly
 ```
 
-At `λ = 0` this reduces exactly to the MoCo-global objective, which is what lets
-the SPARC and DenseCL λ sweeps meet the MoCo v2 baseline at a single shared point.
+![SPARC architecture](docs/figures/architecture.svg)
 
 ## Results
 
@@ -46,12 +44,10 @@ VOC2012 transfer from COCO pretraining, ResNet-18, mean ± s.d. over 5 seeds, in
 Seed-to-seed s.d. on mIoU is ≈0.4 points, so differences below ≈0.8 points are not resolvable at this sample size.
 <!-- results:end -->
 
-![λ ablation, mIoU](docs/figures/lambda_mIoU.png)
+![λ ablation: mIoU, pixel accuracy, AP and AP50 against λ for SPARC and DenseCL, with MoCo v2 at λ = 0](docs/figures/lambda.png)
 
-The table and figure are generated from
-[`experiments/results/aggregate/`](experiments/results/aggregate/) by
-`sparc-report`, never typed by hand, and CI fails if they drift from the data.
-Regenerate with `make paper`.
+Generated from [`experiments/results/aggregate/`](experiments/results/aggregate/)
+by `sparc-report` — never typed by hand; CI fails if table and data drift apart.
 
 ## Where is…?
 
@@ -62,140 +58,133 @@ Regenerate with `make paper`.
 | How the pieces compose into a loss | [`methods/sparc.py`](src/sparc/methods/sparc.py) |
 | The pretraining loop | [`engine/trainer.py`](src/sparc/engine/trainer.py) |
 | Aligned image/mask augmentation | [`data/transforms.py`](src/sparc/data/transforms.py) |
-| Segmentation fine-tuning | [`eval/segmentation.py`](src/sparc/eval/segmentation.py) |
-| Detection fine-tuning | [`eval/detection.py`](src/sparc/eval/detection.py) |
-| How mIoU and AP are computed | [`eval/metrics.py`](src/sparc/eval/metrics.py) |
 | How superpixel masks are generated | [`data/superpixel/`](src/sparc/data/superpixel/) |
+| Segmentation / detection fine-tuning | [`eval/segmentation.py`](src/sparc/eval/segmentation.py), [`eval/detection.py`](src/sparc/eval/detection.py) |
+| How mIoU and AP are computed | [`eval/metrics.py`](src/sparc/eval/metrics.py) |
 | Adding a backbone | [`models/backbones/`](src/sparc/models/backbones/) |
-| Checkpoint → downstream backbone | [`engine/checkpoint.py`](src/sparc/engine/checkpoint.py) |
 | **Where my datasets are** | [`configs/paths.yaml`](configs/paths.yaml) — the only file you must edit |
+| The math, with shapes | [`docs/method.md`](docs/method.md) |
 
 ## Install
 
 ```bash
+git clone https://github.com/xRIPEIx/SPARC.git && cd SPARC
 pip install -e ".[dev]"
-pytest                       # fast, CPU-only, no datasets needed
+pytest                       # ~1 min, CPU only, no datasets — this is the install check
 ```
+
+## Five minutes, no dataset
+
+Run a released fine-tuned model on your own photos:
+
+```bash
+python scripts/download_checkpoints.py seg_head
+python scripts/demo_predict.py --task segmentation \
+    --weights checkpoints/sparc_lambda_0p5_voc_segmentation_resnet18.pth \
+    --images path/to/any/jpegs --out demo_out
+```
+
+Then, in increasing cost — each step in [`docs/reproduce.md`](docs/reproduce.md)
+states what it needs and what number to expect:
+
+| | Needs | Cost | Gives you |
+|---|---|---|---|
+| Fine-tune a released encoder | VOC2012 (~2 GB) | ~2 GPU-h | the headline table |
+| Pretrain one configuration | COCO (~19 GB) + one mask set | ~15 GPU-h | the pipeline end to end |
+| The full study | same data | ~70 pretrains + 140 fine-tunes | every table and figure |
+
+Released weights: [`MODEL_ZOO.md`](MODEL_ZOO.md).
 
 ## Configure
 
-Dataset locations live in exactly one place. Either set environment variables:
+Dataset locations live in **one file**, [`configs/paths.yaml`](configs/paths.yaml).
+Set them with environment variables, or copy `configs/paths.local.yaml.example`
+to `configs/paths.local.yaml` (gitignored):
 
 ```bash
-export SPARC_COCO_IMAGES=/path/to/coco/train2017
-export SPARC_SUPERPIXEL_ROOT=/path/to/superpixel_masks
+export SPARC_COCO_IMAGES=/data/coco/train2017
+export SPARC_SUPERPIXEL_ROOT=/data/superpixel_masks
+export SPARC_VOC_ROOT=/data/VOC                    # the directory containing VOCdevkit
 ```
 
-or copy `configs/paths.local.yaml.example` to `configs/paths.local.yaml` (which
-is gitignored) and edit it. Every other config refers to `${paths.*}` and never
-to a literal path.
+Every other config refers to `${paths.*}`; nothing else needs editing.
 
-## Generate superpixel masks
+## Use
 
 ```bash
-sparc-masks --config configs/superpixel/slic_n100.yaml            # the paper's setting
-sparc-masks --config configs/superpixel/slic_n100.yaml --num-shards 32 --shard-index 7
+sparc-masks    --config configs/superpixel/slic_n100.yaml            # superpixels, once per image tree
+sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml          # SPARC; moco_ / densecl_ for baselines
+sparc-eval     --config configs/downstream/voc_seg_fcn_r18.yaml \
+               --set model.ssl_ckpt=runs/checkpoints/sparc_lambda_0p5/last.pth
 ```
 
-One `.npy` per image, mirroring the image tree, plus a metadata file recording
-how the set was made. Resumable, so a job that hits its time limit is re-run
-rather than restarted. Masks regenerate **identically** from the pinned
-`scikit-image` — verified against the original study's archive — and are stored
-as `uint8`, a quarter the size of `int32` with the same values.
-
-## Pretrain
+Change anything from the command line; unknown keys are rejected, not ignored:
 
 ```bash
-sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml
+sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml --set method.lambda_region=0.7 train.seed=3
 ```
-
-Change anything from the command line; unknown keys are rejected rather than
-silently ignored:
-
-```bash
-sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml \
-               --set method.lambda_region=0.7 train.seed=3
-```
-
-Baselines need no superpixel masks:
-
-```bash
-sparc-pretrain --config configs/pretrain/moco_coco_r18.yaml
-sparc-pretrain --config configs/pretrain/densecl_coco_r18.yaml
-```
-
-## Evaluate
-
-Fine-tune a pretrained backbone on VOC and write a result row:
-
-```bash
-sparc-eval --config configs/downstream/voc_seg_fcn_r18.yaml \
-           --set model.ssl_ckpt=runs/checkpoints/sparc_lambda_0p5/last.pth \
-                 experiment.config_id=sparc_lambda_0p5
-
-sparc-eval --config configs/downstream/voc_det_frcnn_r18.yaml \
-           --set model.ssl_ckpt=runs/checkpoints/sparc_lambda_0p5/last.pth \
-                 experiment.config_id=sparc_lambda_0p5
-```
-
-Baselines need no checkpoint — `--set model.init=random` or
-`model.init=supervised_imagenet`.
-
-Both tasks share one frozen protocol (learning rate, weight decay, schedule),
-tuned once and then applied to every arm, so the comparison measures the
-pretraining objective rather than how much hyper-parameter search each arm got.
-
-Loading a checkpoint that does not fit the requested architecture is a hard
-error, not a warning: a partial load would leave most of the network randomly
-initialised and still report a perfectly plausible metric.
 
 ## Swap the backbone
 
-A different architecture is a config change, not a code change:
+A different architecture is a config change, not a code change — for
+pretraining **and** both downstream heads, which size themselves from the
+backbone's reported channels:
 
 ```bash
 sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml --set backbone.name=resnet50
 sparc-pretrain --config configs/pretrain/sparc_coco_r18.yaml --set backbone.name=timm:convnext_tiny
 ```
 
-The same override works for `sparc-eval`. Built in: `resnet18/34/50/101/152`.
-Any [timm](https://github.com/huggingface/pytorch-image-models) model works via
-the `timm:` prefix (`pip install 'sparc-ssl[timm]'`). Adding a new family means
-writing one registry entry — the FCN and Faster R-CNN heads size themselves from
-the per-stage channel counts it reports, so neither needs to know the
-architecture.
+Adding a backbone family, a dataset, a superpixel method or a pretraining
+objective is one registry entry each: [`docs/extending.md`](docs/extending.md).
 
 ## Reproduce the tables
 
-Every sweep is one YAML file, expanded to a manifest that both the pretraining
-and the evaluation jobs read — so the value a checkpoint was trained with and
-the value recorded against its result cannot disagree:
+Every sweep is one YAML, expanded to a manifest that both the pretraining and
+evaluation jobs read — so the value a checkpoint was trained with and the value
+recorded against its result cannot disagree:
 
 ```bash
 sparc-sweep expand configs/sweeps/sparc_lambda.yaml -o experiments/sparc_lambda/manifest.csv
-bash slurm/submit_sweep.sh --sweep sparc_lambda --seed 1          # SLURM; see slurm/README.md
-sparc-sweep status experiments/sparc_lambda/manifest.csv --results-root runs/results
+bash slurm/submit_sweep.sh --sweep sparc_lambda --seed 1            # SLURM; optional
 sparc-report aggregate --manifest experiments/sparc_lambda/manifest.csv \
                        --results-root runs/results --task segmentation \
                        -o experiments/results/aggregate/sparc_lambda_segmentation_by_config.csv
-make paper                                                          # tables, figures, README block
+make paper                                                            # check, tables, figures
 ```
 
 `sparc-report check` verifies that `sparc_lambda_0`, `densecl_lambda_0` and
-MoCo v2 — three routes to the same objective — agree within seed noise, and
-that no configuration is reported twice under two names. CI runs it.
+MoCo v2 — three routes to the same objective — agree within seed noise, and that
+no configuration is reported twice. CI runs it.
+
+## Docs
+
+[install](docs/install.md) · [datasets](docs/datasets.md) ·
+[method](docs/method.md) · [configuration](docs/configuration.md) ·
+[training](docs/training.md) · [evaluation](docs/evaluation.md) ·
+[experiments](docs/experiments.md) · [cluster](docs/cluster.md) ·
+[reproduce](docs/reproduce.md) · [extending](docs/extending.md) ·
+[FAQ](docs/faq.md)
 
 ## What this repository does and does not contain
 
-Code, configs, experiment manifests, and the **aggregated** results
-(mean ± s.d. per configuration, a few tens of KB) that every table and figure
-is rendered from.
+Code, configs, experiment manifests, and the **aggregated** results every table
+and figure is rendered from (a few tens of KB).
 
 **No datasets, no superpixel masks, no per-run outputs and no model weights.**
-Masks are generated by `sparc-masks`; pretrained weights are published as
-GitHub Release assets. This keeps a clone small, and is enforced by CI rather
-than only by `.gitignore`.
+Masks are regenerated by `sparc-masks` — identically, from the pinned
+scikit-image. Weights are GitHub Release assets. This keeps a clone small, and
+CI enforces it.
 
-## License
+## Citation
 
-MIT — see [LICENSE](LICENSE).
+```bibtex
+@software{sparc2026,
+  author = {Xiang, Yuanpei},
+  title  = {SPARC: SuperPixel-Aware Region Contrastive Learning for Self-Supervised Dense Prediction},
+  year   = {2026},
+  url    = {https://github.com/xRIPEIx/SPARC}
+}
+```
+
+See [`CITATION.cff`](CITATION.cff). MIT licensed — [LICENSE](LICENSE).

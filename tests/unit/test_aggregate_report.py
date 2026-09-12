@@ -159,8 +159,8 @@ class TestRendering:
                 _rec("sparc_lambda_1", 0.36, axis="1"),
             ]
         }
-        text = render_pgfplots(data, "segmentation", "mIoU")
-        assert "(0, 34.0000)" in text and "(1, 36.0000)" in text
+        text = render_pgfplots(data, metrics=("mIoU",), cols=1)
+        assert "(0,34.00)+-(0,0.40)" in text and "(1,36.00)+-(0,0.40)" in text
 
     def test_readme_splice_replaces_only_the_marked_block(self, tmp_path):
         readme = tmp_path / "README.md"

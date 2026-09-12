@@ -13,7 +13,7 @@ the README block matches a fresh render.
 sparc-report check  --aggregates experiments/results/aggregate      # λ=0 identity, double-count
 sparc-report table  --aggregates experiments/results/aggregate      # markdown (or --format latex)
 sparc-report readme --aggregates experiments/results/aggregate      # splice into README.md
-sparc-report figure --aggregates experiments/results/aggregate --metric mIoU -o docs/figures/lambda_mIoU.png
+sparc-report figure --aggregates experiments/results/aggregate -o docs/figures/lambda.png      # or --format pgfplots
 ```
 
 ## Provenance
