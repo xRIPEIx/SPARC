@@ -2,7 +2,7 @@
 
 ![SPARC framework overview](figures/architecture.svg)
 
-*Source: `figures/SPARC_framework_overview.pdf`. Both branches share one encoder; the region branch pools the same feature map over superpixels.*
+*Both branches share one encoder; the region branch pools the same feature map over superpixels.*
 
 SPARC adds a **region-level** contrastive term to image-level self-supervised
 learning, where the regions are superpixels.
