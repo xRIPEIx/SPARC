@@ -14,7 +14,7 @@ transfers to downstream tasks with no mask dependency at all.
 L = (1 − λ) · L_global + λ · L_region          λ = 0 recovers MoCo v2 exactly
 ```
 
-![SPARC architecture](docs/figures/architecture.svg)
+![SPARC framework overview: data preprocessing, dense feature encoding, superpixel mask alignment, and the global and region branches](docs/figures/architecture.svg)
 
 ## Results
 
