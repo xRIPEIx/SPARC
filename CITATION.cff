@@ -1,12 +1,30 @@
 cff-version: 1.2.0
 title: "SPARC: SuperPixel-Aware Region Contrastive Learning for Self-Supervised Dense Prediction"
-message: "If you use this software, please cite it as below."
+message: "If you use this software, please cite it as below. The first three authors contributed equally."
 type: software
 authors:
+  - family-names: Szczecina
+    given-names: David
+    affiliation: Systems Design Engineering, University of Waterloo
   - family-names: Xiang
     given-names: Yuanpei
     email: y53xiang@uwaterloo.ca
-    affiliation: University of Waterloo
+    affiliation: Systems Design Engineering, University of Waterloo
+  - family-names: Hu
+    given-names: Jitao
+    affiliation: Systems Design Engineering, University of Waterloo
+  - family-names: Fieguth
+    given-names: Paul
+    affiliation: Systems Design Engineering, University of Waterloo
+  - family-names: Clausi
+    given-names: David
+    affiliation: Systems Design Engineering, University of Waterloo
+  - family-names: Chen
+    given-names: Yuhao
+    affiliation: Systems Design Engineering, University of Waterloo
+  - family-names: Deglint
+    given-names: Jason
+    affiliation: Systems Design Engineering, University of Waterloo
 license: MIT
 repository-code: "https://github.com/xRIPEIx/SPARC"
 # TODO before submission: add `version`, `date-released`, and the Zenodo `doi`.

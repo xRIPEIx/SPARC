@@ -9,7 +9,15 @@ description = "SPARC: SuperPixel-Aware Region Contrastive learning for self-supe
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
-authors = [{ name = "Yuanpei Xiang", email = "y53xiang@uwaterloo.ca" }]
+authors = [
+    { name = "David Szczecina" },
+    { name = "Yuanpei Xiang", email = "y53xiang@uwaterloo.ca" },
+    { name = "Jitao Hu" },
+    { name = "Paul Fieguth" },
+    { name = "David Clausi" },
+    { name = "Yuhao Chen" },
+    { name = "Jason Deglint" },
+]
 keywords = [
     "self-supervised-learning",
     "contrastive-learning",
