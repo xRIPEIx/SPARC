@@ -85,6 +85,39 @@ make paper          # check + README table + figures + LaTeX
 are three routes to the same objective and agree within 2·SE on the published
 data (largest gap 0.21 mIoU points against a 0.39-point bound).
 
+## Verification run
+
+Before release, the reference configuration was pretrained once from scratch
+with this repository's code and `slurm/` scripts (seed 1, 100 epochs, single
+A100 MIG slice, 12 h) and fine-tuned on both tasks, then scored against the
+five archived seeds of the same configuration:
+
+| metric | this code | archived, 5 seeds | z |
+|---|---|---|---|
+| mIoU | 38.94 | 38.80 ± 0.39 | +0.4 |
+| pixel acc. | 84.36 | 84.34 ± 0.16 | +0.2 |
+| AP | 25.21 | 25.41 ± 0.16 | −1.3 |
+| AP50 | 48.73 | 49.28 ± 0.24 | −2.3 |
+| AP75 | 23.11 | 23.15 ± 0.30 | −0.1 |
+
+Segmentation reproduces within a fraction of a standard deviation. Detection is
+within two standard deviations on AP and AP75; AP50 is 2.3 s.d. below the
+archived mean, 0.2 points under the lowest archived seed. Two things bear on
+how to read that: the archived study's own repeated detection fine-tunes of a
+single checkpoint differed by 0.1–0.3 AP points, so detection fine-tuning at
+batch 2 for 10 epochs is itself noisy at this level; and a standard deviation
+estimated from five values is uncertain enough that one metric in five landing
+at 2.3 s.d. is not remarkable. The training loss at epoch 1 matched the
+original implementation's to 3e-4 on real data, and the two implementations
+agree bit-for-bit on a fixed batch.
+
+The honest summary: the repository reproduces the published numbers within
+seed noise, with detection AP50 at the edge of that bound. Expect the same when
+you reproduce it.
+
+For what it is worth on wall-clock: pretraining took 12 h 02 m, segmentation
+45 min and detection 64 min, all with 16 CPU workers.
+
 ## What the published numbers were produced with
 
 - Single GPU (A100 3g.20gb MIG), AMP, batch 64, 100 epochs, Adam 1e-4.
