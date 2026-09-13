@@ -15,8 +15,14 @@ fi
 source slurm/cluster_env.sh
 
 # Module systems are not universal; skip cleanly when absent.
+#
+# No `module purge` here, and certainly not `--force purge`: on Alliance
+# clusters that also unloads the sticky StdEnv that every other module lives
+# under, after which `python/3.11` is "unknown". A job that did this failed in
+# its first second -- after five hours in the queue. Load on top of whatever
+# the job inherited instead; list StdEnv in SPARC_MODULES if you need a
+# specific one.
 if command -v module >/dev/null 2>&1 && [[ ${#SPARC_MODULES[@]} -gt 0 ]]; then
-    module --force purge >/dev/null 2>&1 || true
     for m in "${SPARC_MODULES[@]}"; do module load "$m"; done
 fi
 
