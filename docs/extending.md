@@ -17,16 +17,17 @@ For a family the registry does not know, return a `BackboneSpec`
 ```python
 from sparc.models.backbones import BackboneSpec, register_backbone
 
+
 @register_backbone("mynet")
 def build_mynet(*, name, imagenet_init=False, **_):
-    net = MyNet(pretrained=imagenet_init)          # classification head removed
+    net = MyNet(pretrained=imagenet_init)  # classification head removed
     return BackboneSpec(
         name=name,
-        net=net,                                   # its state_dict is what gets released
-        feature_dim=768,                           # channels of the final stage
-        stage_channels=(96, 192, 384, 768),        # per stage, coarsest last — the FPN reads this
+        net=net,  # its state_dict is what gets released
+        feature_dim=768,  # channels of the final stage
+        stage_channels=(96, 192, 384, 768),  # per stage, coarsest last — the FPN reads this
         stage_strides=(4, 8, 16, 32),
-        make_extractor=lambda stages: MyNetStages(net, stages),   # image -> {"s1":..., "s4":...}
+        make_extractor=lambda stages: MyNetStages(net, stages),  # image -> {"s1":..., "s4":...}
     )
 ```
 
@@ -64,10 +65,11 @@ One function honouring the contract, one YAML:
 ```python
 from sparc.data.superpixel import register_superpixel
 
+
 @register_superpixel("quickshift")
 def quickshift_mask(image_rgb, n_segments, *, kernel_size=3, max_dist=6.0):
     labels = skimage.segmentation.quickshift(image_rgb, kernel_size=kernel_size, max_dist=max_dist)
-    return labels                                  # int [H, W], labels dense from 0
+    return labels  # int [H, W], labels dense from 0
 ```
 
 ```yaml
@@ -95,9 +97,10 @@ methods:
 ```python
 from sparc.methods import SSLMethod, SSLBatch, StepOutput, register_method
 
+
 @register_method("byol_region")
 class BYOLRegion(SSLMethod):
-    requires_region_masks = True                   # checked before any compute is spent
+    requires_region_masks = True  # checked before any compute is spent
 
     def __init__(self, spec, *, proj_dim=128, **kw):
         super().__init__(spec)
@@ -109,7 +112,8 @@ class BYOLRegion(SSLMethod):
         return StepOutput(loss=loss, metrics={"loss": float(loss)})
 
     def update_momentum(self, m: float) -> None: ...
-    def encoder_state_dict(self): return self.backbone.state_dict()   # plain backbone keys
+    def encoder_state_dict(self):
+        return self.backbone.state_dict()  # plain backbone keys
 ```
 
 Constructor keyword arguments are filled from `method.*` config keys by name;

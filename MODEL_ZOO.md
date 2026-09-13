@@ -42,7 +42,9 @@ Or load the backbone into your own code — the `encoder` entry is a plain
 
 ```python
 import torch, torchvision
-net = torchvision.models.resnet18(); net.fc = torch.nn.Identity()
+
+net = torchvision.models.resnet18()
+net.fc = torch.nn.Identity()
 net.load_state_dict(torch.load("checkpoints/sparc_lambda_0p5_resnet18_coco_ep100.pth")["encoder"])
 ```
 
