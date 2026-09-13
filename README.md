@@ -107,7 +107,12 @@ export SPARC_SUPERPIXEL_ROOT=/data/superpixel_masks
 export SPARC_VOC_ROOT=/data/VOC                    # the directory containing VOCdevkit
 ```
 
-Every other config refers to `${paths.*}`; nothing else needs editing.
+Every other config refers to `${paths.*}`; nothing else needs editing. On a
+single-GPU machine there is nothing to configure for hardware — `train.device`
+defaults to `auto`. Multi-GPU boxes: `--set train.gpu=1`. Match
+`data.num_workers` to your CPU cores. For a run of your own, write a config that
+inherits from a shipped one and overrides only what differs — see
+[`docs/configuration.md`](docs/configuration.md#your-own-run).
 
 ## Use
 

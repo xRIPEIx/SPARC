@@ -42,6 +42,39 @@ The fully-resolved config is printed at start, written to
 `<output.dir>/config.yaml`, and embedded in every checkpoint under `"config"`.
 A checkpoint therefore explains how it was made.
 
+## Your own run
+
+Do not edit the shipped configs; write one that inherits from them. A file
+anywhere under `configs/` can list a shipped config in `defaults:` and override
+only what differs:
+
+```yaml
+# configs/pretrain/my_run.yaml
+defaults: [sparc_coco_r18.yaml]
+
+experiment:
+  config_id: my_run          # names the checkpoint directory and the result row
+  run_id: my_run
+
+data:
+  images: /data/my_images     # any directory tree of images
+  masks: /data/my_masks/slic_n100
+  num_workers: 12             # match the CPU cores you give the job
+
+train:
+  gpu: 0                      # which CUDA device; omit to take the first one
+  batch_size: 64
+  amp: true
+```
+
+```bash
+sparc-masks    --config configs/superpixel/slic_n100.yaml --set superpixel.images=/data/my_images
+sparc-pretrain --config configs/pretrain/my_run.yaml
+```
+
+Anything in the file can still be overridden at the command line with `--set`.
+The resolved result is printed at start and saved next to the checkpoints.
+
 ## Which file for what
 
 | Directory | Contents |
