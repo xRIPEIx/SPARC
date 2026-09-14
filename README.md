@@ -49,6 +49,16 @@ Seed-to-seed s.d. on mIoU is ≈0.4 points, so differences below ≈0.8 points a
 Generated from [`experiments/results/aggregate/`](experiments/results/aggregate/)
 by `sparc-report` — never typed by hand; CI fails if table and data drift apart.
 
+**Qualitative comparison.** MoCo v2, DenseCL, and SPARC.
+
+*Segmentation* — red marks pixels where the predicted class disagrees with ground truth; SPARC's error maps show visibly less red than either baseline's.
+
+![Qualitative segmentation comparison: ground truth vs MoCo v2, DenseCL, and SPARC predictions and error maps on two VOC2012 images](docs/figures/qualitative_segmentation.png)
+
+*Detection* — SPARC localizes objects that MoCo v2 and DenseCL miss or only partially detect at the same 0.6 confidence threshold.
+
+![Qualitative detection comparison: ground truth vs MoCo v2, DenseCL, and SPARC predictions on two VOC2012 images](docs/figures/qualitative_detection.png)
+
 ## Where is…?
 
 | I want to understand… | Go to |
