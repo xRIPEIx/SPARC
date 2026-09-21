@@ -196,8 +196,8 @@ CI enforces it.
 
 ```bibtex
 @software{sparc2026,
-  author = {Szczecina, David and Xiang, Yuanpei and Hu, Jitao and Fieguth, Paul
-            and Clausi, David and Chen, Yuhao and Deglint, Jason},
+  author = {Szczecina, David and Xiang, Yuanpei and Hu, Jitao and Clausi, David
+            and Chen, Yuhao and Deglint, Jason and Fieguth, Paul},
   title  = {{SPARC}: SuperPixel-Aware Region Contrastive Learning for Self-Supervised Dense Prediction},
   year   = {2026},
   url    = {https://github.com/xRIPEIx/SPARC},

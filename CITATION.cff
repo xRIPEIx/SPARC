@@ -13,9 +13,6 @@ authors:
   - family-names: Hu
     given-names: Jitao
     affiliation: Systems Design Engineering, University of Waterloo
-  - family-names: Fieguth
-    given-names: Paul
-    affiliation: Systems Design Engineering, University of Waterloo
   - family-names: Clausi
     given-names: David
     affiliation: Systems Design Engineering, University of Waterloo
@@ -24,6 +21,9 @@ authors:
     affiliation: Systems Design Engineering, University of Waterloo
   - family-names: Deglint
     given-names: Jason
+    affiliation: Systems Design Engineering, University of Waterloo
+  - family-names: Fieguth
+    given-names: Paul
     affiliation: Systems Design Engineering, University of Waterloo
 license: MIT
 repository-code: "https://github.com/xRIPEIx/SPARC"

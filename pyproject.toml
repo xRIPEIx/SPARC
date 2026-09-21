@@ -13,10 +13,10 @@ authors = [
     { name = "David Szczecina" },
     { name = "Yuanpei Xiang", email = "y53xiang@uwaterloo.ca" },
     { name = "Jitao Hu" },
-    { name = "Paul Fieguth" },
     { name = "David Clausi" },
     { name = "Yuhao Chen" },
     { name = "Jason Deglint" },
+    { name = "Paul Fieguth" },
 ]
 keywords = [
     "self-supervised-learning",
