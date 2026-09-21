@@ -3,7 +3,7 @@
 
     python scripts/download_checkpoints.py seg_head
     python scripts/demo_predict.py --task segmentation \
-        --weights checkpoints/sparc_lambda_0p5_voc_segmentation_resnet18.pth \
+        --weights checkpoints/sparc_lambda_0p5_seed1_voc_segmentation_resnet18.pth \
         --images path/to/some/jpegs --out demo_out
 
 Writes one PNG per image: the photo with predicted VOC classes overlaid

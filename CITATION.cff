@@ -27,4 +27,6 @@ authors:
     affiliation: Systems Design Engineering, University of Waterloo
 license: MIT
 repository-code: "https://github.com/xRIPEIx/SPARC"
-# TODO before submission: add `version`, `date-released`, and the Zenodo `doi`.
+version: 1.0.0
+date-released: "2026-09-21"
+# TODO: add the Zenodo `doi` once the archived release (all weights) exists.

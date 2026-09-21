@@ -90,7 +90,7 @@ Run a released fine-tuned model on your own photos:
 ```bash
 python scripts/download_checkpoints.py seg_head
 python scripts/demo_predict.py --task segmentation \
-    --weights checkpoints/sparc_lambda_0p5_voc_segmentation_resnet18.pth \
+    --weights checkpoints/sparc_lambda_0p5_seed1_voc_segmentation_resnet18.pth \
     --images path/to/any/jpegs --out demo_out
 ```
 
@@ -100,6 +100,7 @@ states what it needs and what number to expect:
 | | Needs | Cost | Gives you |
 |---|---|---|---|
 | Fine-tune a released encoder | VOC2012 (~2 GB) | ~2 GPU-h | the headline table |
+| Fine-tune all 70 released ablation encoders | VOC2012 (~2 GB) | ~45 GPU-h | the λ ablation, all five seeds |
 | Pretrain one configuration | COCO (~19 GB) + one mask set | ~15 GPU-h | the pipeline end to end |
 | The full study | same data | ~70 pretrains + 140 fine-tunes | every table and figure |
 

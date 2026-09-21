@@ -15,7 +15,7 @@ across machines are not the bar.
 pip install -e .
 python scripts/download_checkpoints.py seg_head det_head
 python scripts/demo_predict.py --task segmentation \
-    --weights checkpoints/sparc_lambda_0p5_voc_segmentation_resnet18.pth \
+    --weights checkpoints/sparc_lambda_0p5_seed1_voc_segmentation_resnet18.pth \
     --images path/to/any/jpegs --out demo_out
 ```
 
@@ -27,11 +27,11 @@ images in ~9 s on two CPU cores.
 Fine-tune the released encoders yourself. Needs VOC2012 (~2 GB), nothing else.
 
 ```bash
-python scripts/download_checkpoints.py
+python scripts/download_checkpoints.py baselines sparc_lambda_0p5 densecl_lambda_0p5
 export SPARC_VOC_ROOT=/path/containing/VOCdevkit
 for enc in sparc_lambda_0p5 moco densecl_lambda_0p5; do
   sparc-eval --config configs/downstream/voc_seg_fcn_r18.yaml \
-      --set model.ssl_ckpt=checkpoints/${enc}_resnet18_coco_ep100.pth experiment.config_id=$enc
+      --set model.ssl_ckpt=checkpoints/${enc}_seed1_resnet18_coco_ep100.pth experiment.config_id=$enc
 done
 ```
 
@@ -39,6 +39,40 @@ Expected (seed 1, mIoU): SPARC λ=0.5 **39.2**, DenseCL **37.5**, MoCo v2 **33.9
 — see `experiments/results/aggregate/` for every seed. Segmentation takes
 ≈30 min per encoder on an A100 MIG slice; detection (`voc_det_frcnn_r18.yaml`)
 ≈1 h and gives AP 25.5 / 24.1 / 23.9.
+
+## Tier 0c — the λ ablation from released weights (≈45 GPU-hours, VOC2012 only)
+
+Every encoder in the README's λ table is released at all five seeds, so the
+whole ablation reproduces from fine-tuning alone — no COCO, no masks, no
+pretraining. Seed 1 of each is on the GitHub Release now; seeds 2–5 arrive with
+the Zenodo record (see [`MODEL_ZOO.md`](../MODEL_ZOO.md)), and until then the
+download below fetches the 14 seed-1 encoders and skips the rest, which still
+gives one full curve per method. Each fine-tune is a separate `sparc-eval` run keyed by the same
+`config_id` / `run_id` / seed the sweep manifests use, so `sparc-report`
+aggregates the results exactly as it does for the archived study.
+
+```bash
+python scripts/download_checkpoints.py sparc_lambda densecl_lambda --seeds all   # 70 encoders, ~3.1 GB
+export SPARC_VOC_ROOT=/path/containing/VOCdevkit
+for cid in sparc_lambda_{0,0p1,0p3,0p5,0p7,0p9,1} densecl_lambda_{0,0p1,0p3,0p5,0p7,0p9,1}; do
+  for seed in 1 2 3 4 5; do
+    run=$cid; [ $seed -gt 1 ] && run=${cid}_seed$seed
+    for cfg in voc_seg_fcn_r18 voc_det_frcnn_r18; do
+      sparc-eval --config configs/downstream/$cfg.yaml \
+          --set model.ssl_ckpt=checkpoints/${cid}_seed${seed}_resnet18_coco_ep100.pth \
+                train.seed=$seed experiment.config_id=$cid experiment.run_id=$run
+    done
+  done
+done
+for s in sparc_lambda densecl_lambda; do for t in segmentation detection; do
+  sparc-report aggregate --manifest experiments/$s/manifest.csv \
+      --results-root runs/results --task $t -o my_aggregate/${s}_${t}_by_config.csv
+done; done
+```
+
+Expected: the README λ table, row for row, within seed noise. Budget ≈30 min
+per segmentation and ≈1 h per detection fine-tune on an A100 MIG slice; on a
+SLURM cluster, `slurm/` runs the same loop as job arrays (see `docs/cluster.md`).
 
 ## Tier 1 — one configuration end to end (≈15 GPU-hours)
 
